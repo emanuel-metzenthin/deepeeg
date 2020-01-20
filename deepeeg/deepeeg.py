@@ -3,6 +3,9 @@ import logging
 from keras.models import model_from_json
 
 class DeepEEG():
+    # TODO make configurable
+    # https://www.researchgate.net/publication/309873852_Single-trial_EEG_classification_of_motor_imagery_using_deep_convolutional_neural_networks
+    # https://www.researchgate.net/publication/315096373_Deep_learning_with_convolutional_neural_networks_for_brain_mapping_and_decoding_of_movement-related_information_from_the_human_EEG
     conv_layers = [{'filters': 25, 'pool_size': 3, 'kernel_size': 2, 'activation_func': 'relu'},
                    {'filters': 50, 'pool_size': 3, 'kernel_size': 2, 'activation_func': 'relu'},
                    {'filters': 100, 'pool_size': 2, 'kernel_size': 2, 'activation_func': 'relu'},
@@ -10,16 +13,7 @@ class DeepEEG():
     dense_layers = [{'num_units': 1, 'activation_func': 'sigmoid'}]
 
     def train_cnn(self, input_shape, save_model_to=None, save_weights_to=None):
-        # TODO make configurable
-        conv_layers = [{'filters': 25, 'pool_size': 3, 'kernel_size': 2, 'activation_func': 'relu'},
-                       {'filters': 50, 'pool_size': 3, 'kernel_size': 2, 'activation_func': 'relu'},
-                       {'filters': 100, 'pool_size': 2, 'kernel_size': 2, 'activation_func': 'relu'},
-                       {'filters': 200, 'pool_size': 2, 'kernel_size': 2, 'activation_func': 'relu'}]
-        dense_layers = [{'num_units': 1, 'activation_func': 'sigmoid'}]
-
-        # https://www.researchgate.net/publication/309873852_Single-trial_EEG_classification_of_motor_imagery_using_deep_convolutional_neural_networks
-        # https://www.researchgate.net/publication/315096373_Deep_learning_with_convolutional_neural_networks_for_brain_mapping_and_decoding_of_movement-related_information_from_the_human_EEG
-        model = modelbuilder.build_cnn_model(conv_layers, dense_layers, True, input_shape)
+        model = modelbuilder.build_cnn_model(self.conv_layers, self.dense_layers, input_shape)
 
         model.compile(optimizer='adam', loss='binary_crossentropy')
 
@@ -45,5 +39,7 @@ class DeepEEG():
 
         loaded_model = model_from_json(loaded_model_json)
         loaded_model.load_weights(weights_file)
+
+        self.model = loaded_model
 
         return loaded_model

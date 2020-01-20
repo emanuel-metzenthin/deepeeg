@@ -7,7 +7,7 @@ def main():
 
     MODE = arguments.mode
 
-    train, val = read_brainvis_from_directory('./data')
+    X_train, y_train, X_val, y_val = read_brainvis_from_directory('./data')
 
     deepeeg = DeepEEG()
 
@@ -22,7 +22,8 @@ def main():
 
     elif MODE == argparser.PREDICT_MODE:
         pass
-    model.fit(train,val,epochs=1000)
+
+    model.fit(X_train, y_train, epochs=1000, validation_data=(X_val, y_val))
 
 if __name__ == '__main__':
     main()

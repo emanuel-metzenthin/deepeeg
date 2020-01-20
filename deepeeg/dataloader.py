@@ -2,8 +2,10 @@ import mne
 import os
 import numpy as np
 import pandas as pd
+import logging
+from sklearn.model_selection import train_test_split
 
-def load_brainvis_file(filename, label, train_x, train_y, drop_stimuli=[7], drop_channels=[], n_timesteps=1000):
+def load_brainvis_file(filename, label, train_x, train_y, drop_stimuli=[7], drop_channels=[128, 129, 130, 131], n_timesteps=1000):
     raw = mne.io.read_raw_brainvision(filename)
     events, _ = mne.events_from_annotations(raw) 
     data = pd.DataFrame(raw.get_data())
@@ -21,7 +23,7 @@ def read_brainvis_from_directory(path):
     train_x = []
     train_y = []
 
-    labels = pd.read_csv(os.path.join(folder, 'labels.csv'), sep=';', header=0, decimal=',')
+    labels = pd.read_csv(os.path.join(path, 'labels.csv'), sep=';', header=0, decimal=',')
     labels = labels.loc[:, ['Pair', 'coact012_bin1234']]
     labels = labels.rename(columns = {'coact012_bin1234': 'Score'})
     labels.astype({'Score': 'float64'})
@@ -35,13 +37,15 @@ def read_brainvis_from_directory(path):
             ids = filename.split('_')
             label = labels.loc[labels['Pair'] == 'P'+ ids[1]].at[0,'Score']
             print('Filename:' + filename)
-            load_brainvis_file(filename, label, train_x, train_y)
+            load_brainvis_file(os.path.join(path, filename), label, train_x, train_y)
             continue
 
     train_x = np.dstack(train_x)
     train_x = np.moveaxis(train_x, -1, 0)
     train_y = np.asarray(train_y)
-    print(train_x.shape)
-    print(train_y.shape)
 
-    return train_x, train_y
+    X_train, X_val, y_train, y_val = train_test_split(train_x, train_y, test_size = 0.33, random_state = 42)
+
+    logging.info('X_train.shape : {}, X_val.shape : {}'.format(X_train.shape, X_val.shape))
+
+    return X_train, y_train, X_val, y_val
