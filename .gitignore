@@ -143,3 +143,7 @@ data/
 !.vscode/launch.json
 !.vscode/extensions.json
 *.code-workspace
+
+#models
+model.json
+weights.hdf5

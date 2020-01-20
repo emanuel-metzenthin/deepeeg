@@ -18,10 +18,10 @@ def load_brain_vis_file(filename,label,train,val):
 
     return
 
-def read_brainvis_from_directory(folder):
+def read_brainvis_from_directory(path):
     train = []
     val = []
-    labels = pd.read_csv(os.path.join(folder, 'labels.csv'), sep=';', header=0, decimal=',')
+    labels = pd.read_csv(os.path.join(path, 'labels.csv'), sep=';', header=0, decimal=',')
     labels = labels.loc[:, ['Pair', 'coact012_bin1234']]
     labels = labels.rename(columns = {'coact012_bin1234': 'Score'})
     labels.astype({'Score': 'float64'})
@@ -29,12 +29,12 @@ def read_brainvis_from_directory(folder):
     maxScore = labels.Score.max()
     labels.Score = (labels.Score - minScore) / (maxScore - minScore)
     labels.Score = np.where(labels.Score > 0.5, 1, 0)
-    for filename in os.listdir(folder):
+    for filename in os.listdir(path):
         if filename.endswith("Z.vhdr"): 
             ids = filename.split('_')
             label = labels.loc[labels['Pair'] == 'P'+ ids[1]].at[0,'Score']
             print('Filename:' + filename)
-            load_brain_vis_file(filename,label,train,val)
+            load_brain_vis_file(os.path.join(path, filename),label,train,val)
             continue
 
  

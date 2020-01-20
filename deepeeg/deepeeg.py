@@ -1,4 +1,4 @@
-import modelbuilder
+from deepeeg  import modelbuilder
 import logging
 from keras.models import model_from_json
 
@@ -14,7 +14,7 @@ class DeepEEG():
 
         # https://www.researchgate.net/publication/309873852_Single-trial_EEG_classification_of_motor_imagery_using_deep_convolutional_neural_networks
         # https://www.researchgate.net/publication/315096373_Deep_learning_with_convolutional_neural_networks_for_brain_mapping_and_decoding_of_movement-related_information_from_the_human_EEG
-        model = modelbuilder.build_cnn_model(conv_layers, dense_layers, False, input_shape)
+        model = modelbuilder.build_cnn_model(conv_layers, dense_layers, True, input_shape)
 
         model.compile(optimizer='adam', loss='binary_crossentropy')
 

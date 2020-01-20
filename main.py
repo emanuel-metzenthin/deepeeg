@@ -1,5 +1,5 @@
 import argparser
-from dataloader import read_brainvis_from_directory
+from deepeeg.dataloader import read_brainvis_from_directory
 from deepeeg.deepeeg import DeepEEG
 
 def main():
@@ -9,7 +9,7 @@ def main():
 
     train, val = read_brainvis_from_directory('./data/')
 
-    print(train)
+    print(val)
 
     deepeeg = DeepEEG()
 
@@ -24,6 +24,7 @@ def main():
 
     elif MODE == argparser.PREDICT_MODE:
         pass
+    model.fit(train,val,epochs=1000)
 
 if __name__ == '__main__':
     main()
