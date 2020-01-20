@@ -3,6 +3,11 @@ import logging
 from keras.models import model_from_json
 
 class DeepEEG():
+    conv_layers = [{'filters': 25, 'pool_size': 3, 'kernel_size': 2, 'activation_func': 'relu'},
+                   {'filters': 50, 'pool_size': 3, 'kernel_size': 2, 'activation_func': 'relu'},
+                   {'filters': 100, 'pool_size': 2, 'kernel_size': 2, 'activation_func': 'relu'},
+                   {'filters': 200, 'pool_size': 2, 'kernel_size': 2, 'activation_func': 'relu'}]
+    dense_layers = [{'num_units': 1, 'activation_func': 'sigmoid'}]
 
     def train_cnn(self, input_shape, save_model_to=None, save_weights_to=None):
         # TODO make configurable

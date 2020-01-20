@@ -1,15 +1,16 @@
 import argparser
-from dataloader import read_brainvis_from_directory
+from deepeeg.dataloader import read_brainvis_from_directory
 from deepeeg.deepeeg import DeepEEG
+import os
 
 def main():
     arguments = argparser.parse_arguments()
 
     MODE = arguments.mode
 
-    train, val = read_brainvis_from_directory('./data/')
+    train, val = read_brainvis_from_directory('./data')
 
-    print(train)
+    print(train.shape, val.shape)
 
     deepeeg = DeepEEG()
 

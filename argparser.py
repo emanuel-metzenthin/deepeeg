@@ -19,6 +19,6 @@ def parse_arguments():
 
     parser.add_argument('--num_timesteps', '-nt', type=int, default=1000, help='number of values in the EEG timeseries per training sample')
 
-    parser.add_argument('--num_sensors', '-ns', type=int, default=64, help='number of sensors per trial participant')
+    parser.add_argument('--num_sensors', '-ns', type=int, default=128, help='number of sensors per trial participant')
 
     return parser.parse_args()
