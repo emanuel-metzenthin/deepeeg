@@ -1,6 +1,7 @@
 from deepeeg  import modelbuilder
 import logging
 from keras.models import model_from_json
+from keras.callbacks import EarlyStopping
 
 class DeepEEG():
     # TODO make configurable
@@ -12,10 +13,10 @@ class DeepEEG():
                    {'filters': 200, 'pool_size': 2, 'kernel_size': 2, 'activation_func': 'relu'}]
     dense_layers = [{'num_units': 1, 'activation_func': 'sigmoid'}]
 
-    def train_cnn(self, input_shape, save_model_to=None, save_weights_to=None):
-        model = modelbuilder.build_cnn_model(self.conv_layers, self.dense_layers, input_shape)
+    def train_cnn(self, X_train, y_train, X_val, y_val, save_model_to=None, save_weights_to=None):
+        model = modelbuilder.build_cnn_model(self.conv_layers, self.dense_layers, (X_train.shape[1], X_train.shape[2]))
 
-        model.compile(optimizer='adam', loss='binary_crossentropy')
+        model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
 
         logging.info(model.summary())
 
@@ -29,6 +30,10 @@ class DeepEEG():
             logging.info("Saved model weights to disk: {}".format(save_weights_to))
 
         self.model = model
+
+        hist = model.fit(X_train, y_train, epochs=1000, validation_data=(X_val, y_val), callbacks=[EarlyStopping(min_delta=0.001)])
+
+        print(hist.history['accuracy'])
 
         return model
 

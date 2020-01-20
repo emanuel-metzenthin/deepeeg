@@ -35,7 +35,8 @@ def read_brainvis_from_directory(path):
     for filename in os.listdir(path):
         if filename.endswith("Z.vhdr"): 
             ids = filename.split('_')
-            label = labels.loc[labels['Pair'] == 'P'+ ids[1]].at[0,'Score']
+            pair = labels.loc[labels['Pair'] == 'P' + ids[1]]
+            label = pair.at[pair.index[0],'Score']
             print('Filename:' + filename)
             load_brainvis_file(os.path.join(path, filename), label, train_x, train_y)
             continue

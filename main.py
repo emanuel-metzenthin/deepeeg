@@ -15,15 +15,13 @@ def main():
         input_shape = (arguments.num_timesteps, arguments.num_sensors)
 
         if arguments.model == argparser.CNN:
-            model = deepeeg.train_cnn(input_shape=input_shape, save_model_to='./model.json', save_weights_to='./weights.hdf5')
+            model = deepeeg.train_cnn(X_train, y_train, X_val, y_val, save_model_to='./model.json', save_weights_to='./weights.hdf5')
 
         elif arguments.model == argparser.RNN:
             pass
 
     elif MODE == argparser.PREDICT_MODE:
         pass
-
-    model.fit(X_train, y_train, epochs=1000, validation_data=(X_val, y_val))
 
 if __name__ == '__main__':
     main()
