@@ -1,5 +1,7 @@
 import argparse
 
+# TODO remove later : switching to library
+
 TRAIN_MODE = 'train'
 PREDICT_MODE = 'predict'
 CNN = 'cnn'
