@@ -17,7 +17,7 @@ def load_brainvis_file(filename, label, train_x, train_y, drop_stimuli=[7], drop
 
     return
 
-def read_brainvis_from_directory(folder):
+def read_brainvis_from_directory(path):
     train_x = []
     train_y = []
 
@@ -30,7 +30,7 @@ def read_brainvis_from_directory(folder):
     maxScore = labels.Score.max()
     labels.Score = (labels.Score - minScore) / (maxScore - minScore)
     labels.Score = np.where(labels.Score > 0.5, 1, 0)
-    for filename in os.listdir(folder):
+    for filename in os.listdir(path):
         if filename.endswith("Z.vhdr"): 
             ids = filename.split('_')
             label = labels.loc[labels['Pair'] == 'P'+ ids[1]].at[0,'Score']
