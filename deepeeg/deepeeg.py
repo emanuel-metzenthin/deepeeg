@@ -2,6 +2,7 @@ from deepeeg  import modelbuilder
 import logging
 from keras.models import model_from_json
 from keras.callbacks import EarlyStopping
+import matplotlib.pyplot as plt
 
 class DeepEEG():
     # TODO make configurable
@@ -12,6 +13,26 @@ class DeepEEG():
                    {'filters': 100, 'pool_size': 2, 'kernel_size': 2, 'activation_func': 'relu'},
                    {'filters': 200, 'pool_size': 2, 'kernel_size': 2, 'activation_func': 'relu'}]
     dense_layers = [{'num_units': 1, 'activation_func': 'sigmoid'}]
+
+    def plot_training_history(self, history):
+        print(history.history.keys())
+        # Plot training & validation accuracy values
+        plt.plot(history.history['accuracy'])
+        plt.plot(history.history['val_accuracy'])
+        plt.title('Model accuracy')
+        plt.ylabel('Accuracy')
+        plt.xlabel('Epoch')
+        plt.legend(['Train', 'Test'], loc='upper left')
+        plt.show()
+
+        # Plot training & validation loss values
+        plt.plot(history.history['loss'])
+        plt.plot(history.history['val_loss'])
+        plt.title('Model loss')
+        plt.ylabel('Loss')
+        plt.xlabel('Epoch')
+        plt.legend(['Train', 'Test'], loc='upper left')
+        plt.show()
 
     def train_cnn(self, X_train, y_train, X_val, y_val, save_model_to=None, save_weights_to=None):
         model = modelbuilder.build_cnn_model(self.conv_layers, self.dense_layers, (X_train.shape[1], X_train.shape[2]))
@@ -31,9 +52,9 @@ class DeepEEG():
 
         self.model = model
 
-        hist = model.fit(X_train, y_train, epochs=1000, validation_data=(X_val, y_val), callbacks=[EarlyStopping(min_delta=0.001)])
+        hist = model.fit(X_train, y_train, epochs=1000, validation_data=(X_val, y_val), callbacks=[EarlyStopping(min_delta=0.0001)])
 
-        print(hist.history['accuracy'])
+        self.plot_training_history(hist)
 
         return model
 
