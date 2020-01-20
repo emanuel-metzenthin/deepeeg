@@ -133,6 +133,9 @@ dmypy.json
 # IntelliJ
 /.idea
 
+# Data
+data/
+
 #vsCode
 .vscode/*
 !.vscode/settings.json
