@@ -15,8 +15,6 @@ def load_brain_vis_file(filename,label,train,val):
             train.append(data_A.iloc[event[0]:event[0] + N_TIMESTEPS, :])
             val.append(label)
 
-    #train = np.dstack(train)
-    #train = np.moveaxis(train, -1, 0)
     return
 
 def read_brainvis_from_directory(folder):
