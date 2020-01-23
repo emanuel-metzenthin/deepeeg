@@ -1,5 +1,5 @@
 import argparser
-from deepeeg.dataloader import read_brainvis_from_directory
+from deepeeg.dataloader import load_data_from_dir
 from deepeeg.deepeeg import DeepEEG
 import logging
 
@@ -9,9 +9,7 @@ def main():
 
     MODE = arguments.mode
 
-    X_train, y_train, X_val, y_val = read_brainvis_from_directory('./data')
-
-    logging.info('Shape : ', X_train.shape, y_train, X_val, y_val)
+    X_train, y_train, X_val, y_val = load_data_from_dir('./data/deepeeg-format/raw')
 
     deepeeg = DeepEEG()
 
