@@ -26,7 +26,8 @@ def build_cnn_model(conv_layers, dense_layers, input_shape):
             continue
         add_conv1D_layer(model, conv_layer['filters'], conv_layer['pool_size'], conv_layer['kernel_size'], conv_layer['activation_func'])
 
-    model.add(Dropout(rate=0.3))
+    model.add(Dropout(rate=0.4))
+
     model.add(Flatten())
 
     for dense_layer in dense_layers:

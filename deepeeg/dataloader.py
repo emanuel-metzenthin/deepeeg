@@ -67,8 +67,8 @@ def load_data_from_dir(path):  # TODO? Add file pattern param
     train_x = np.moveaxis(train_x, -1, 0)
     train_y = np.asarray(train_y)
 
-    X_train, X_val, y_train, y_val = train_test_split(train_x, train_y, test_size=0.33, random_state=42)
+    X_train, X_val, y_train, y_val = train_test_split(train_x, train_y, test_size=0.217, random_state=42)
 
-    logging.info('X_train.shape : {}, X_val.shape : {}, y_train: {}, y_val: {}'.format(X_train.shape, X_val.shape, y_train, y_val))
+    logging.info('X_train.shape : {}, X_val.shape : {}, y_train.shape: {}, y_val.shape: {}'.format(X_train.shape, X_val.shape, y_train.shape, y_val.shape))
 
     return X_train, y_train, X_val, y_val
