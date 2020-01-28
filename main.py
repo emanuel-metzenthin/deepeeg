@@ -18,6 +18,8 @@ def main():
             model = deepeeg.train_cnn(X_train, y_train, X_val, y_val, save_model_to='./model.json', save_weights_to='./weights.hdf5')
 
         elif arguments.model == argparser.RNN:
+            model = deepeeg.train_rnn(X_train, y_train, X_val, y_val, save_model_to='./model_rnn.json',
+                                      save_weights_to='./weights_rnn.hdf5')
             pass
 
     elif MODE == argparser.PREDICT_MODE:

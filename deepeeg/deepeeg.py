@@ -15,6 +15,12 @@ class DeepEEG():
                    {'filters': 512, 'pool_size': 3, 'kernel_size': 9, 'activation_func': 'relu'}]
     dense_layers = [{'num_units': 100, 'activation_func': 'relu'}, {'num_units': 1, 'activation_func': 'sigmoid'}]
 
+    rnn_layers = [{'num_units': 64},
+                   {'num_units': 128},
+                   {'num_units': 256},
+                   {'num_units': 512}]
+    dense_rnn_layers = [{'num_units': 100, 'activation_func': 'relu'}, {'num_units': 1, 'activation_func': 'sigmoid'}]
+
     def plot_training_history(self, history):
         # Plot training & validation accuracy values
         plt.plot(history.history['accuracy'])
@@ -60,6 +66,32 @@ class DeepEEG():
         model.load_weights(save_weights_to)
 
         print(model.evaluate(X_val, y_val))
+
+        return model
+
+    def train_rnn(self, X_train, y_train, X_val, y_val, save_model_to=None, save_weights_to=None):
+        model = modelbuilder.build_rnn_model(self.rnn_layers, self.dense_rnn_layers, (X_train.shape[1], X_train.shape[2]))
+
+        keras.optimizers.Adam(learning_rate=0.0001)
+
+        model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
+
+        logging.info(model.summary())
+
+        if save_model_to and save_weights_to:
+            model_json = model.to_json()
+            with open(save_model_to, "w") as json_file:
+                json_file.write(model_json)
+                logging.info("Saved model to disk: {}".format(save_model_to))
+
+            model.save_weights(save_weights_to)
+            logging.info("Saved model weights to disk: {}".format(save_weights_to))
+
+        self.model = model
+        print(X_train.shape)
+        hist = model.fit(X_train, y_train, epochs=1000, validation_data=(X_val, y_val))
+
+        self.plot_training_history(hist)
 
         return model
 
