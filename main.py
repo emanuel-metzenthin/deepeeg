@@ -1,29 +1,14 @@
-import argparser
 from deepeeg.dataloader import load_data_from_dir
 from deepeeg.deepeeg import DeepEEG
-import logging
 
 def main():
-    logging.getLogger().setLevel(logging.INFO)
-    arguments = argparser.parse_arguments()
-
-    MODE = arguments.mode
-
-    X_train, y_train, X_val, y_val = load_data_from_dir('./data/deepeeg-format/raw')
+    X_train, y_train, X_val, y_val = load_data_from_dir('./data/deepeeg-format/raw', test_size=0.217)
 
     deepeeg = DeepEEG()
 
-    if MODE == argparser.TRAIN_MODE:
-        if arguments.model == argparser.CNN:
-            model = deepeeg.train_cnn(X_train, y_train, X_val, y_val, save_model_to='./model.json', save_weights_to='./weights.hdf5')
+    deepeeg.init_cnn((X_train.shape[1], X_train.shape[2]))
 
-        elif arguments.model == argparser.RNN:
-            model = deepeeg.train_rnn(X_train, y_train, X_val, y_val, save_model_to='./model_rnn.json',
-                                      save_weights_to='./weights_rnn.hdf5')
-            pass
-
-    elif MODE == argparser.PREDICT_MODE:
-        pass
+    deepeeg.train(X_train, y_train, X_val, y_val)
 
 if __name__ == '__main__':
     main()

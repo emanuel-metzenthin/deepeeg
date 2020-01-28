@@ -1,12 +1,11 @@
-from deepeeg  import modelbuilder
 import logging
-from keras.models import model_from_json
-from keras.callbacks import EarlyStopping, ModelCheckpoint
 import matplotlib.pyplot as plt
-import keras
+from keras.callbacks import ModelCheckpoint
+from keras.models import model_from_json
+from deepeeg import modelbuilder
+
 
 class DeepEEG():
-    # TODO make configurable
     # https://www.researchgate.net/publication/309873852_Single-trial_EEG_classification_of_motor_imagery_using_deep_convolutional_neural_networks
     # https://www.researchgate.net/publication/315096373_Deep_learning_with_convolutional_neural_networks_for_brain_mapping_and_decoding_of_movement-related_information_from_the_human_EEG
     conv_layers = [{'filters': 64, 'pool_size': 3, 'kernel_size': 9, 'activation_func': 'relu'},
@@ -16,9 +15,9 @@ class DeepEEG():
     dense_layers = [{'num_units': 100, 'activation_func': 'relu'}, {'num_units': 1, 'activation_func': 'sigmoid'}]
 
     rnn_layers = [{'num_units': 64},
-                   {'num_units': 128},
-                   {'num_units': 256},
-                   {'num_units': 512}]
+                  {'num_units': 128},
+                  {'num_units': 256},
+                  {'num_units': 512}]
     dense_rnn_layers = [{'num_units': 100, 'activation_func': 'relu'}, {'num_units': 1, 'activation_func': 'sigmoid'}]
 
     def plot_training_history(self, history):
@@ -40,60 +39,63 @@ class DeepEEG():
         plt.legend(['Train', 'Test'], loc='upper left')
         plt.show()
 
-    def train_cnn(self, X_train, y_train, X_val, y_val, save_model_to=None, save_weights_to='.cnn-weights.hdf5'):
-        model = modelbuilder.build_cnn_model(self.conv_layers, self.dense_layers, (X_train.shape[1], X_train.shape[2]))
+    def init_cnn(self, data_shape, save_model_to=None):
+        builder = modelbuilder.CNNBuilder()
 
-        keras.optimizers.Adam(learning_rate=0.0001)
+        first = True
 
-        model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
+        for conv_layer in self.conv_layers:
+            if first:
+                builder.add_normalized_conv_layer(conv_layer['filters'], conv_layer['pool_size'],
+                                                  conv_layer['kernel_size'],
+                                                  conv_layer['activation_func'], data_shape)
+                first = False
+                continue
+            builder.add_normalized_conv_layer(conv_layer['filters'], conv_layer['pool_size'], conv_layer['kernel_size'],
+                                              conv_layer['activation_func'])
 
-        logging.info(model.summary())
+        builder.add_dropout_layer()
+
+        builder.add_flatten_layer()
+
+        for dense_layer in self.dense_layers:
+            builder.add_dense_layer(dense_layer['num_units'], dense_layer['activation_func'])
+
+        self.model = builder.build()
 
         if save_model_to:
-            model_json = model.to_json()
+            model_json = self.model.to_json()
             with open(save_model_to, "w") as json_file:
                 json_file.write(model_json)
                 logging.info("Saved model to disk: {}".format(save_model_to))
 
-        checkpointer = ModelCheckpoint(filepath=save_weights_to, verbose=1, save_best_only=True)
+    def init_lstm(self, data_shape, save_model_to=None):
+        builder = modelbuilder.LSTMBuilder()
 
-        self.model = model
+        for rnn_layer in self.rnn_layers:
+            if first:
+                if len(self.rnn_layers) == 1:
+                    builder.add_LSTM_layer(rnn_layer['num_units'], input_shape=data_shape, return_sequences=False)
+                    continue
+                builder.add_LSTM_layer(rnn_layer['num_units'], input_shape=data_shape, return_sequences=True)
+                first = False
+                continue
+            if rnn_layer == self.rnn_layers[len(self.rnn_layers) - 1]:
+                builder.add_LSTM_layer(rnn_layer['num_units'], return_sequences=False)
+                continue
 
-        hist = model.fit(X_train, y_train, epochs=100, validation_data=(X_val, y_val), batch_size=5, callbacks=[checkpointer])
+            builder.add_LSTM_layer(rnn_layer['num_units'], return_sequences=True)
 
-        self.plot_training_history(hist)
+        for dense_layer in self.dense_rnn_layers:
+            builder.add_dense_layer(dense_layer['num_units'], activation=dense_layer['activation_func'])
 
-        model.load_weights(save_weights_to)
+        self.model = builder.build()
 
-        print(model.evaluate(X_val, y_val))
-
-        return model
-
-    def train_rnn(self, X_train, y_train, X_val, y_val, save_model_to=None, save_weights_to=None):
-        model = modelbuilder.build_rnn_model(self.rnn_layers, self.dense_rnn_layers, (X_train.shape[1], X_train.shape[2]))
-
-        keras.optimizers.Adam(learning_rate=0.0001)
-
-        model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
-
-        logging.info(model.summary())
-
-        if save_model_to and save_weights_to:
-            model_json = model.to_json()
+        if save_model_to:
+            model_json = self.model.to_json()
             with open(save_model_to, "w") as json_file:
                 json_file.write(model_json)
                 logging.info("Saved model to disk: {}".format(save_model_to))
-
-            model.save_weights(save_weights_to)
-            logging.info("Saved model weights to disk: {}".format(save_weights_to))
-
-        self.model = model
-        print(X_train.shape)
-        hist = model.fit(X_train, y_train, epochs=1000, validation_data=(X_val, y_val))
-
-        self.plot_training_history(hist)
-
-        return model
 
     def load_model(self, model_file, weights_file):
         json_file = open(model_file, 'r')
@@ -106,3 +108,20 @@ class DeepEEG():
         self.model = loaded_model
 
         return loaded_model
+
+    def train(self, X_train, y_train, X_val, y_val, epochs=1000, batch_size=10, save_weights_to='.cnn-weights.hdf5'):
+        checkpointer = ModelCheckpoint(filepath=save_weights_to, verbose=1, save_best_only=True)
+
+        hist = self.model.fit(X_train, y_train, epochs=epochs, validation_data=(X_val, y_val), batch_size=batch_size,
+                              callbacks=[checkpointer])
+
+        self.plot_training_history(hist)
+
+        self.model.load_weights(save_weights_to)
+
+        logging.info('Accuracy of trained model on validation data: {}'.format(self.model.evaluate(X_val, y_val)[1]))
+
+        return self.model
+
+    def predict(self, X_test):
+        return self.model.predict(X_test)
