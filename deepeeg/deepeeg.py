@@ -1,8 +1,10 @@
 import logging
 import matplotlib.pyplot as plt
+import numpy as np
 from keras.callbacks import ModelCheckpoint
 from keras.models import model_from_json
 from deepeeg import modelbuilder
+from sklearn.metrics import classification_report
 
 
 class DeepEEG():
@@ -119,9 +121,18 @@ class DeepEEG():
 
         self.model.load_weights(save_weights_to)
 
-        logging.info('Accuracy of trained model on validation data: {}'.format(self.model.evaluate(X_val, y_val)[1]))
+        logging.info('Training finished!')
+
+        self.evaluate_model(X_val, y_val)
 
         return self.model
 
     def predict(self, X_test):
         return self.model.predict(X_test)
+
+    def evaluate_model(self, X_test, y_test):
+        y_pred = self.model.predict(X_test, batch_size=64, verbose=1)
+        y_pred_bool = np.argmax(y_pred, axis=1)
+
+        print('Model evaluation:')
+        print(classification_report(y_test, y_pred_bool))
