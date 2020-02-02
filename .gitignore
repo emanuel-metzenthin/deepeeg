@@ -151,4 +151,4 @@ model_rnn.json
 weights_rnn.hdf5
 
 #main.py
-main.py
+#main.py
