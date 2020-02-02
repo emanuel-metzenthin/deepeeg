@@ -6,7 +6,6 @@ from keras.models import model_from_json
 from deepeeg import modelbuilder
 from sklearn.metrics import classification_report
 
-
 class DeepEEG():
     # https://www.researchgate.net/publication/309873852_Single-trial_EEG_classification_of_motor_imagery_using_deep_convolutional_neural_networks
     # https://www.researchgate.net/publication/315096373_Deep_learning_with_convolutional_neural_networks_for_brain_mapping_and_decoding_of_movement-related_information_from_the_human_EEG
@@ -111,7 +110,10 @@ class DeepEEG():
 
         return loaded_model
 
-    def train(self, X_train, y_train, X_val, y_val, epochs=1000, batch_size=10, save_weights_to='.cnn-weights.hdf5'):
+    def set_model(self, model):
+        self.model = model
+
+    def train(self, X_train, y_train, X_val, y_val, epochs=1000, batch_size=10, save_weights_to='cnn_highpass_weights.hdf5'):
         checkpointer = ModelCheckpoint(filepath=save_weights_to, verbose=1, save_best_only=True)
 
         hist = self.model.fit(X_train, y_train, epochs=epochs, validation_data=(X_val, y_val), batch_size=batch_size,
@@ -132,7 +134,7 @@ class DeepEEG():
 
     def evaluate_model(self, X_test, y_test):
         y_pred = self.model.predict(X_test, batch_size=64, verbose=1)
-        y_pred_bool = np.argmax(y_pred, axis=1)
+        y_pred_bool = np.around(y_pred)
 
-        print('Model evaluation:')
-        print(classification_report(y_test, y_pred_bool))
+        logging.info('Model evaluation:')
+        logging.info(classification_report(y_test, y_pred_bool))
