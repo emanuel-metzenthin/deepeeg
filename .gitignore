@@ -149,3 +149,6 @@ model.json
 weights.hdf5
 model_rnn.json
 weights_rnn.hdf5
+
+#main.py
+main.py

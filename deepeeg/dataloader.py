@@ -2,6 +2,7 @@ import os
 import numpy as np
 import pandas as pd
 import logging
+import mne
 from sklearn.model_selection import train_test_split
 
 #
@@ -34,3 +35,12 @@ def load_data_from_dir(path, test_size=0.33):  # TODO? Add file pattern param
     logging.info('X_train.shape : {}, X_val.shape : {}, y_train.shape: {}, y_val.shape: {}'.format(X_train.shape, X_val.shape, y_train.shape, y_val.shape))
 
     return X_train, y_train, X_val, y_val
+
+#
+# Expects a data array of shape (#measurements, #channels)
+# original_freq = source recording frequency
+# l_freq = lower pass-band edg. If None the data are only low-passed.
+# h_freq = higher pass-band edg. If None the data are only high-passed.
+#
+def apply_filter(data, original_freq, l_freq, h_freq):
+    return mne.filter.filter_data(data.T, original_freq, l_freq, h_freq).T
