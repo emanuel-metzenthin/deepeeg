@@ -6,7 +6,8 @@ def main():
 
     deepeeg = DeepEEG()
 
-    deepeeg.init_cnn((X_train.shape[1], X_train.shape[2]))
+    #deepeeg.init_cnn((X_train.shape[1], X_train.shape[2]))
+    deepeeg.init_lstm((X_train.shape[1], X_train.shape[2]))
 
     deepeeg.train(X_train, y_train, X_val, y_val)
 

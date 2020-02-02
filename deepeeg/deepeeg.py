@@ -16,10 +16,10 @@ class DeepEEG():
                    {'filters': 512, 'pool_size': 3, 'kernel_size': 9, 'activation_func': 'relu'}]
     dense_layers = [{'num_units': 100, 'activation_func': 'relu'}, {'num_units': 1, 'activation_func': 'sigmoid'}]
 
-    rnn_layers = [{'num_units': 64},
-                  {'num_units': 128},
-                  {'num_units': 256},
-                  {'num_units': 512}]
+    rnn_layers = [{'num_units': 64}]#,
+                  #{'num_units': 128},
+                  #{'num_units': 256},
+                  #{'num_units': 512}]
     dense_rnn_layers = [{'num_units': 100, 'activation_func': 'relu'}, {'num_units': 1, 'activation_func': 'sigmoid'}]
 
     def plot_training_history(self, history):
@@ -73,7 +73,7 @@ class DeepEEG():
 
     def init_lstm(self, data_shape, save_model_to=None):
         builder = modelbuilder.LSTMBuilder()
-
+        first = True
         for rnn_layer in self.rnn_layers:
             if first:
                 if len(self.rnn_layers) == 1:
@@ -87,9 +87,10 @@ class DeepEEG():
                 continue
 
             builder.add_LSTM_layer(rnn_layer['num_units'], return_sequences=True)
+            builder.add_batch_normalization()
 
         for dense_layer in self.dense_rnn_layers:
-            builder.add_dense_layer(dense_layer['num_units'], activation=dense_layer['activation_func'])
+            builder.add_dense_layer(dense_layer['num_units'], dense_layer['activation_func'])
 
         self.model = builder.build()
 
@@ -111,7 +112,7 @@ class DeepEEG():
 
         return loaded_model
 
-    def train(self, X_train, y_train, X_val, y_val, epochs=1000, batch_size=10, save_weights_to='.cnn-weights.hdf5'):
+    def train(self, X_train, y_train, X_val, y_val, epochs=25, batch_size=10, save_weights_to='.rnn-weights.hdf5'):
         checkpointer = ModelCheckpoint(filepath=save_weights_to, verbose=1, save_best_only=True)
 
         hist = self.model.fit(X_train, y_train, epochs=epochs, validation_data=(X_val, y_val), batch_size=batch_size,
@@ -132,7 +133,10 @@ class DeepEEG():
 
     def evaluate_model(self, X_test, y_test):
         y_pred = self.model.predict(X_test, batch_size=64, verbose=1)
-        y_pred_bool = np.argmax(y_pred, axis=1)
+
+        #y_pred_bool = np.argmax(y_pred, axis=1)
+        y_pred_bool = np.around(y_pred, decimals=0)#
+        print(y_pred_bool)
 
         print('Model evaluation:')
         print(classification_report(y_test, y_pred_bool))

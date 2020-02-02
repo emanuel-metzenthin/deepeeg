@@ -51,3 +51,6 @@ class LSTMBuilder(Builder):
 
     def add_dense_layer(self, num_units, activation_func):
         self.model.add(Dense(num_units, activation=activation_func))
+
+    def add_batch_normalization(self):
+        self.model.add(BatchNormalization())
